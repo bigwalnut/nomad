@@ -96,6 +96,11 @@ func (d *Driver) mountVolumes(c *lxc.Container, cfg *drivers.TaskConfig, taskCon
 		return err
 	}
 
+	cgroupDevPermissions, err := d.deviceCgroupEntries(cfg, taskConfig)
+	if err != nil {
+		return err
+	}
+
 	for _, mnt := range mounts {
 		if err := c.SetConfigItem("lxc.mount.entry", mnt); err != nil {
 			return fmt.Errorf("error setting bind mount %q error: %v", mnt, err)
@@ -145,11 +150,7 @@ func (d *Driver) formatTaskMounts(mounts []*drivers.MountConfig) []string {
 	result := make([]string, len(mounts))
 
 	for i, m := range mounts {
-		perm := "ro"
-		if !m.Readonly {
-			perm = "rw"
-		}
-		result[i] = d.formatMount(m.HostPath, m.TaskPath, perm)
+		result[i] = d.formatMount(m.HostPath, m.TaskPath, m.Readonly)
 	}
 
 	return result
@@ -159,13 +160,14 @@ func (d *Driver) formatTaskDevices(devices []*drivers.DeviceConfig) []string {
 	result := make([]string, len(devices))
 
 	for i, m := range devices {
-		result[i] = d.formatMount(m.HostPath, m.TaskPath, m.Permissions)
+		result[i] = d.formatMount(m.HostPath, m.TaskPath,
+			!strings.Contains(m.Permissions, "w"))
 	}
 
 	return result
 }
 
-func (d *Driver) formatMount(hostPath, taskPath, permissions string) string {
+func (d *Driver) formatMount(hostPath, taskPath, readOnly bool) string {
 	typ := "dir"
 	s, err := os.Stat(hostPath)
 	if err != nil {
@@ -174,9 +176,14 @@ func (d *Driver) formatMount(hostPath, taskPath, permissions string) string {
 		typ = "file"
 	}
 
+	perm := "rw"
+	if readOnly {
+		perm = "ro"
+	}
+
 	// LXC assumes paths are relative with respect to rootfs
 	target := strings.TrimLeft(taskPath, "/")
-	return fmt.Sprintf("%s %s none %s,bind,create=%s", hostPath, target, permissions, typ)
+	return fmt.Sprintf("%s %s none %s,bind,create=%s", hostPath, target, perm, typ)
 }
 
 func (d *Driver) setResourceLimits(c *lxc.Container, cfg *drivers.TaskConfig) error {
