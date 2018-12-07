@@ -208,7 +208,7 @@ func TestExecDriver_StartWaitStopKill(t *testing.T) {
 		out, err := exec.Command("ps", "-ef").CombinedOutput()
 		fmt.Println("############ PROCESSES", err)
 		fmt.Println(string(out))
-		fmt.Println("///////////////////////")
+		fmt.Println("-----------------------")
 	}
 	go func() {
 		logger.Info("stopping task")
@@ -229,7 +229,13 @@ func TestExecDriver_StartWaitStopKill(t *testing.T) {
 			out, err := exec.Command("ps", "-ef").CombinedOutput()
 			fmt.Println("############ PROCESSES", err)
 			fmt.Println(string(out))
-			fmt.Println("///////////////////////")
+			fmt.Println("-----------------------")
+		}
+		{
+			out, err := exec.Command("cat", fmt.Sprintf("/tmp/executor-%s.log", task.ID)).CombinedOutput()
+			fmt.Println("############ EXECUTOR LOG", err)
+			fmt.Println(string(out))
+			fmt.Println("-----------------------")
 		}
 		panic("timed out")
 		//require.Fail("timeout waiting for task to shutdown")

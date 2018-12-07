@@ -239,7 +239,10 @@ func (l *LibcontainerExecutor) Wait() (*ProcessState, error) {
 func (l *LibcontainerExecutor) wait() {
 	defer close(l.userProcExited)
 
+	pid, err := l.userProc.Pid()
+	l.logger.Warn("waiting for process to complete", "pid", pid, "err", err)
 	ps, err := l.userProc.Wait()
+	l.logger.Warn("process waited", "pid", pid, "ps", ps, "err", err)
 	if err != nil {
 		// If the process has exited before we called wait an error is returned
 		// the process state is embedded in the error
@@ -276,6 +279,12 @@ func (l *LibcontainerExecutor) wait() {
 // Shutdown stops all processes started and cleans up any resources
 // created (such as mountpoints, devices, etc).
 func (l *LibcontainerExecutor) Shutdown(signal string, grace time.Duration) error {
+	l.logger.Warn("shutting down",
+		"signal", signal,
+		"grace", grace,
+		"container", l.container,
+		"status", l.container.Status)
+
 	if l.container == nil {
 		return nil
 	}
@@ -312,21 +321,30 @@ func (l *LibcontainerExecutor) Shutdown(signal string, grace time.Duration) erro
 
 		// Signal initial container processes only during graceful
 		// shutdown; hence `false` arg.
+		l.logger.Warn("signaling process")
 		err = l.container.Signal(sig, false)
+		l.logger.Warn("signaled process", "result", err)
 		if err != nil {
 			return err
 		}
 
 		select {
 		case <-l.userProcExited:
+			l.logger.Warn("signaled process and userproc exited")
 			return nil
 		case <-time.After(grace):
 			// Force kill all container processes after grace period,
 			// hence `true` argument.
-			return l.container.Signal(os.Kill, true)
+			l.logger.Warn("signaled process but didn't die")
+			err := l.container.Signal(os.Kill, true)
+			l.logger.Warn("killed process", "err", err)
+			return err
 		}
 	} else {
-		return l.container.Signal(os.Kill, true)
+		l.logger.Warn("no grace, killing")
+		err := l.container.Signal(os.Kill, true)
+		l.logger.Warn("no grace killed process", "err", err)
+		return err
 	}
 }
 

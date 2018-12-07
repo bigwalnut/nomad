@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"path/filepath"
 	"runtime"
 	"time"
 
@@ -285,7 +284,7 @@ func (d *Driver) StartTask(cfg *drivers.TaskConfig) (*drivers.TaskHandle, *cstru
 	handle := drivers.NewTaskHandle(pluginName)
 	handle.Config = cfg
 
-	pluginLogFile := filepath.Join(cfg.TaskDir().Dir, "executor.out")
+	pluginLogFile := fmt.Sprintf("/tmp/executor-%s.log", cfg.ID) //filepath.Join(cfg.TaskDir().Dir, "executor.out")
 	executorConfig := &pexecutor.ExecutorConfig{
 		LogFile:     pluginLogFile,
 		LogLevel:    "debug",

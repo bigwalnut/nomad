@@ -262,7 +262,7 @@ test: ## Run the Nomad test suite and/or the Nomad UI test suite
 test-nomad: dev ## Run Nomad test suites
 	@echo "==> Running Nomad test suites:"
 	$(if $(ENABLE_RACE),GORACE="strip_path_prefix=$(GOPATH)/src") go test \
-		$(if $(ENABLE_RACE),-race) $(if $(VERBOSE),-v) \
+		$(if $(ENABLE_RACE),-race) -v \
 		-cover \
 		-timeout=30m \
 		-tags="$(if $(HAS_LXC),lxc)" github.com/hashicorp/nomad/drivers/exec $(if $(VERBOSE), >test.log ; echo $$? > exit-code)
