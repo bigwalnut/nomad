@@ -11,6 +11,10 @@ type StateDB interface {
 	// Name of implementation.
 	Name() string
 
+	// Upgrade ensures the layout of the database is at the latest version
+	// or returns an error.
+	Upgrade() error
+
 	// GetAllAllocations returns all valid allocations and a map of
 	// allocation IDs to retrieval errors.
 	//
@@ -20,6 +24,11 @@ type StateDB interface {
 	// PulAllocation stores an allocation or returns an error if it could
 	// not be stored.
 	PutAllocation(*structs.Allocation) error
+
+	// Get/Put DeploymentStatus get and put the allocation's deployment
+	// status. It may be nil.
+	GetDeploymentStatus(allocID string) (*structs.AllocDeploymentStatus, error)
+	PutDeploymentStatus(allocID string, ds *structs.AllocDeploymentStatus) error
 
 	// GetTaskRunnerState returns the LocalState and TaskState for a
 	// TaskRunner. Either state may be nil if it is not found, but if an

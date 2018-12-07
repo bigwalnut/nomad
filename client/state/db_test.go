@@ -216,3 +216,25 @@ func TestStateDB_DeviceManager(t *testing.T) {
 		require.Equal(state, ps)
 	})
 }
+
+// TestStateDB_Upgrade_Ok asserts upgrading from the <=0.8 to 0.9 schema.
+func TesBolttStateDB_Upgrade_Ok(t *testing.T) {
+	t.Parallel()
+
+	db, cleanup := setupBoltDB(t)
+	defer cleanup()
+
+	//TODO setup 0.8 schema
+	require.NoError(db.Upgrade())
+}
+
+// TestStateDB_Upgrade_Bad asserts an error is returned if the old data is too
+// corrupt to safely update.
+func TestBoltStateDB_Upgrade_Bad(t *testing.T) {
+	t.Parallel()
+
+	testDB(t, func(t *testing.T, db StateDB) {
+		//TODO setup 0.8 schema
+		require.NoError(db.Upgrade())
+	})
+}
