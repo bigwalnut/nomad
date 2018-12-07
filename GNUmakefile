@@ -265,7 +265,7 @@ test-nomad: dev ## Run Nomad test suites
 		$(if $(ENABLE_RACE),-race) $(if $(VERBOSE),-v) \
 		-cover \
 		-timeout=30m \
-		-tags="$(if $(HAS_LXC),lxc)" ./... $(if $(VERBOSE), >test.log ; echo $$? > exit-code)
+		-tags="$(if $(HAS_LXC),lxc)" github.com/hashicorp/nomad/drivers/exec $(if $(VERBOSE), >test.log ; echo $$? > exit-code)
 	@if [ $(VERBOSE) ] ; then \
 		bash -C "$(PROJECT_ROOT)/scripts/test_check.sh" ; \
 	fi

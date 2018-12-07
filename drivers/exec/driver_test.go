@@ -172,13 +172,15 @@ func TestExecDriver_StartWaitStopKill(t *testing.T) {
 	require := require.New(t)
 	ctestutils.ExecCompatible(t)
 
-	d := NewExecDriver(testlog.HCLogger(t))
+	logger := testlog.HCLogger(t)
+	d := NewExecDriver(logger)
 	harness := dtestutil.NewDriverHarness(t, d)
 	task := &drivers.TaskConfig{
 		ID:   uuid.Generate(),
 		Name: "test",
 	}
 
+	logger = logger.Named("waitstopkill")
 	taskConfig := map[string]interface{}{
 		"command": "/bin/bash",
 		"args":    []string{"-c", "echo hi; sleep 600"},
@@ -188,23 +190,34 @@ func TestExecDriver_StartWaitStopKill(t *testing.T) {
 	cleanup := harness.MkAllocDir(task, false)
 	defer cleanup()
 
+	logger.Info("task starting")
 	handle, _, err := harness.StartTask(task)
 	require.NoError(err)
+	logger.Info("task started")
 	defer harness.DestroyTask(task.ID, true)
 
+	logger.Info("task waiting")
 	ch, err := harness.WaitTask(context.Background(), handle.Config.ID)
 	require.NoError(err)
+	logger.Info("task done waiting")
 
+	logger.Info("waiting till started")
 	require.NoError(harness.WaitUntilStarted(task.ID, 1*time.Second))
+	logger.Info("task really started")
 
 	go func() {
+		logger.Info("stopping task")
 		harness.StopTask(task.ID, 2*time.Second, "SIGINT")
+		logger.Info("stopped task")
 	}()
 
+	logger.Info("waiting for result")
 	select {
 	case result := <-ch:
+		logger.Info("received result", "result", result)
 		require.False(result.Successful())
 	case <-time.After(10 * time.Second):
+		logger.Info("timed out")
 		require.Fail("timeout waiting for task to shutdown")
 	}
 
