@@ -735,12 +735,16 @@ func (d *Driver) StopTask(taskID string, timeout time.Duration, signal string) e
 		return drivers.ErrTaskNotFound
 	}
 
+	d.logger.Warn("stopping task", "task_id", taskID, "signal", signal, "timeout", timeout)
 	if err := handle.exec.Shutdown(signal, timeout); err != nil {
+		d.logger.Warn("stopped task errored", "task_id", taskID, "signal", signal, "timeout", timeout, "err", err)
 		if handle.pluginClient.Exited() {
+			d.logger.Warn("stopped task errored but process exited", "task_id", taskID, "signal", signal, "timeout", timeout, "err", err)
 			return nil
 		}
 		return fmt.Errorf("executor Shutdown failed: %v", err)
 	}
+	d.logger.Warn("stopped task", "task_id", taskID, "signal", signal, "timeout", timeout)
 
 	return nil
 }

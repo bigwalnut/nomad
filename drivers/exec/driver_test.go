@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -203,6 +204,12 @@ func TestExecDriver_StartWaitStopKill(t *testing.T) {
 	require.NoError(harness.WaitUntilStarted(task.ID, 1*time.Second))
 	logger.Info("task really started")
 
+	{
+		out, err := exec.Command("ps", "-ef").CombinedOutput()
+		fmt.Println("############ PROCESSES", err)
+		fmt.Println(string(out))
+		fmt.Println("///////////////////////")
+	}
 	go func() {
 		logger.Info("stopping task")
 		harness.StopTask(task.ID, 2*time.Second, "SIGINT")
@@ -217,6 +224,13 @@ func TestExecDriver_StartWaitStopKill(t *testing.T) {
 	case <-time.After(10 * time.Second):
 		status, err := harness.InspectTask(task.ID)
 		logger.Info("timed out", "status", status, "err", err)
+
+		{
+			out, err := exec.Command("ps", "-ef").CombinedOutput()
+			fmt.Println("############ PROCESSES", err)
+			fmt.Println(string(out))
+			fmt.Println("///////////////////////")
+		}
 		panic("timed out")
 		//require.Fail("timeout waiting for task to shutdown")
 	}
