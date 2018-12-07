@@ -215,8 +215,10 @@ func TestExecDriver_StartWaitStopKill(t *testing.T) {
 		logger.Info("received result", "result", result)
 		require.False(result.Successful())
 	case <-time.After(10 * time.Second):
-		logger.Info("timed out")
-		require.Fail("timeout waiting for task to shutdown")
+		status, err := harness.InspectTask(task.ID)
+		logger.Info("timed out", "status", status, "err", err)
+		panic("timed out")
+		//require.Fail("timeout waiting for task to shutdown")
 	}
 
 	// Ensure that the task is marked as dead, but account
