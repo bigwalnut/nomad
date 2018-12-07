@@ -2,7 +2,12 @@ package libcontainer
 
 import (
 	"github.com/opencontainers/runc/libcontainer/configs"
+	"github.com/sirupsen/logrus"
 )
+
+func init() {
+	logrus.SetLevel(logrus.DebugLevel)
+}
 
 type Factory interface {
 	// Creates a new container with the given id and starts the initial process inside it.

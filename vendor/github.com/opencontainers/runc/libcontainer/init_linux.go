@@ -471,15 +471,19 @@ func isNoChildren(err error) bool {
 // For all other signals it will check if the process is ready to report its
 // exit status and only if it is will a wait be performed.
 func signalAllProcesses(m cgroups.Manager, s os.Signal) error {
+	logrus.Warn("signaling all processes")
 	var procs []*os.Process
 	if err := m.Freeze(configs.Frozen); err != nil {
+		logrus.WithError(err).Warn("failed to freeze")
 		logrus.Warn(err)
 	}
+	logrus.Warn("freezed pids")
 	pids, err := m.GetAllPids()
 	if err != nil {
 		m.Freeze(configs.Thawed)
 		return err
 	}
+	logrus.WithError(err).WithField("pids", pids).Warn("killing all processes")
 	for _, pid := range pids {
 		p, err := os.FindProcess(pid)
 		if err != nil {
@@ -490,6 +494,7 @@ func signalAllProcesses(m cgroups.Manager, s os.Signal) error {
 		if err := p.Signal(s); err != nil {
 			logrus.Warn(err)
 		}
+		logrus.WithField("signal", s).WithField("pid", pid).Warn("process signaled")
 	}
 	if err := m.Freeze(configs.Thawed); err != nil {
 		logrus.Warn(err)

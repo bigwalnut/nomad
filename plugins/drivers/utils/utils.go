@@ -76,7 +76,8 @@ func CreateExecutor(w io.Writer, level hclog.Level, driverConfig *base.ClientDri
 	}
 
 	config := &plugin.ClientConfig{
-		Cmd: exec.Command(bin, "executor", string(c)),
+		Cmd:    exec.Command(bin, "executor", string(c)),
+		Stderr: os.Stderr,
 	}
 	config.HandshakeConfig = base.Handshake
 	config.Plugins = pexecutor.GetPluginMap(w, level, executorConfig.FSIsolation)

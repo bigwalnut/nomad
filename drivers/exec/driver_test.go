@@ -221,6 +221,12 @@ func TestExecDriver_StartWaitStopKill(t *testing.T) {
 	case result := <-ch:
 		logger.Info("received result", "result", result)
 		require.False(result.Successful())
+		{
+			out, err := exec.Command("cat", fmt.Sprintf("/tmp/executor-%s.log", task.ID)).CombinedOutput()
+			fmt.Println("############ EXECUTOR LOG", err)
+			fmt.Println(string(out))
+			fmt.Println("-----------------------")
+		}
 	case <-time.After(10 * time.Second):
 		status, err := harness.InspectTask(task.ID)
 		logger.Info("timed out", "status", status, "err", err)
