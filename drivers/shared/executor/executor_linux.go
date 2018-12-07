@@ -298,6 +298,11 @@ func (l *LibcontainerExecutor) Shutdown(signal string, grace time.Duration) erro
 		return err
 	}
 
+	{
+		procs, err := l.container.Processes()
+		l.logger.Warn("found following processes", "procs", procs, "err", err)
+	}
+
 	status, err := l.container.Status()
 	if err != nil {
 		return err
