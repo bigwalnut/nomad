@@ -630,6 +630,7 @@ func (ar *allocRunner) Destroy() {
 	calloc := ar.clientAlloc(states)
 	ar.stateUpdater.AllocStateUpdated(calloc)
 
+	ar.logger.Info("killed tasks", "states", states)
 	// Wait for tasks to exit and postrun hooks to finish
 	<-ar.waitCh
 
