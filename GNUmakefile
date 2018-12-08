@@ -261,7 +261,7 @@ test: ## Run the Nomad test suite and/or the Nomad UI test suite
 .PHONY: test-nomad
 test-nomad: dev ## Run Nomad test suites
 	@echo "==> Running Nomad test suites:"
-	$(if $(ENABLE_RACE),GORACE="strip_path_prefix=$(GOPATH)/src") NOMAD_TEST_STDOUT=1 go test \
+	$(if $(ENABLE_RACE),GORACE="strip_path_prefix=$(GOPATH)/src") go test \
 		$(if $(ENABLE_RACE),-race) -v \
 		-cover \
 		-timeout=15m \
