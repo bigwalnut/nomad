@@ -342,6 +342,9 @@ func (tr *TaskRunner) Run() {
 	defer close(tr.waitCh)
 	var result *drivers.ExitResult
 
+	tr.logger.Info("running task", "alloc_id", tr.allocID, "task_id", tr.task.Name)
+	defer tr.logger.Info("task running finished", "alloc_id", tr.allocID, "task_id", tr.task.Name)
+
 	// Updates are handled asynchronously with the other hooks but each
 	// triggered update - whether due to alloc updates or a new vault token
 	// - should be handled serially.
@@ -420,6 +423,8 @@ MAIN:
 
 	RESTART:
 		restart, restartDelay := tr.shouldRestart()
+		tr.logger.Info("task terminated and will restart", "alloc_id", tr.allocID, "task_id", tr.task.Name,
+			"restart", restart, "restartDelay", restartDelay)
 		if !restart {
 			break MAIN
 		}
@@ -427,6 +432,7 @@ MAIN:
 		// Actually restart by sleeping and also watching for destroy events
 		select {
 		case <-time.After(restartDelay):
+			tr.logger.Info("task terminated and waiting", "alloc_id", tr.allocID, "task_id", tr.task.Name)
 		case <-tr.killCtx.Done():
 			tr.logger.Trace("task killed between restarts", "delay", restartDelay)
 			break MAIN

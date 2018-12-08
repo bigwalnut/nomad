@@ -65,6 +65,8 @@ func (tr *TaskRunner) Signal(event *structs.TaskEvent, s string) error {
 // Kill a task. Blocks until task exits or context is canceled. State is set to
 // dead.
 func (tr *TaskRunner) Kill(ctx context.Context, event *structs.TaskEvent) error {
+	tr.logger.Info("killing task", "alloc_id", tr.allocID, "task_id", tr.task.Name)
+
 	// Cancel the task runner to break out of restart delay or the main run
 	// loop.
 	tr.killCtxCancel()
