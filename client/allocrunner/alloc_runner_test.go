@@ -19,8 +19,7 @@ func TestAllocRunner_AllocState_Initialized(t *testing.T) {
 
 	alloc := mock.Alloc()
 	alloc.Job.TaskGroups[0].Tasks[0].Driver = "mock_driver"
-	conf, cleanup := 
-  RunnerConfig(t, alloc)
+	conf, cleanup := testAllocRunnerConfig(t, alloc)
 	defer cleanup()
 
 	ar, err := NewAllocRunner(conf)
